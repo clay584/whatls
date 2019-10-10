@@ -6,6 +6,7 @@ sessions that were captured and exports the data to CSV.
 ## What is included in the report?
 
 * capture_file - The name of the capture file where the data was pulled.
+* tcp_stream_id - The TCP stream ID in the capture. Useful for finding the packets in the capture for additional research.
 * client_hello - The full packet details of the Client Hello packet in the TLS handshake for a given session.
 * server_hello - The full packet details of the Server Hello packet in the TLS handshake for a given session.
 * negotiated_tls_version - What version of SSL/TLS was chosen for a given session.

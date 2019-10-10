@@ -32,24 +32,6 @@ def get_ssl_streams(cap):
     return handshake_tuples_list
 
 
-def get_client_hello(cap, stream):
-    for pkt in cap:
-        if int(pkt.tcp.stream) == stream:
-            if pkt.ssl.get_field(
-                "handshake"
-            ) is not None and "Client Hello" in pkt.ssl.get_field("handshake"):
-                return pkt
-
-
-def get_server_hello(cap, stream):
-    for pkt in cap:
-        if int(pkt.tcp.stream) == stream:
-            if pkt.ssl.get_field(
-                "handshake"
-            ) is not None and "Server Hello" in pkt.ssl.get_field("handshake"):
-                return pkt
-
-
 def get_negotiated_tls_version(pkt):
     try:
         return TLS_VERSION_MAPPING[str(pkt.ssl.get_field("handshake_version"))]

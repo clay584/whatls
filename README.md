@@ -15,6 +15,7 @@ sessions that were captured and exports the data to CSV.
 
 ## Installation
 
+1. Python 3.6 at a minimum.
 1. `git clone https://github.com/clay584/whatls && cd whatls`
 2. `pip install -r requirements.txt`
 

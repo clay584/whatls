@@ -25,6 +25,12 @@ From the data, making a pivot table and chart is basic Excel magic.
 
 ## Usage
 
-1. Take a packet capture and save to file.
-2. Run `./whatls.py MyCaptureFile.pcap`.
-3. The CSV report will be saved to `MyCaptureFile.csv`.
+1. Take a packet capture from a device and save to file.
+2. Pre-filter your capture with `tcpdump -nt -r MyCaptureFile.pcap "$(cat ssl_filter.bpf)" -w MyCaptureFile_filtered.pcap`. This 
+does two things. First, it makes the analysis faster by orders of magnitude as `tcpdump` with `bpf` is way faster than using a 
+display filter and iterating through packets with pyshark. Second, I've noticed that when a capture is taken and analyzed 
+without first running it through `tcpdump`, pyshark chokes on it for some reason and gives incomplete data. In test captures, 
+41 SSL sessions were found, whereas after using `tcpdump` to filter, pyshark was able to analyze all of it, resulting in 
+151 SSL sessions.
+3. Run `./whatls.py MyCaptureFile_filtered.pcap`.
+4. The CSV report will be saved to `MyCaptureFile_filtered.csv`.

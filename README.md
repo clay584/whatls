@@ -3,6 +3,10 @@
 What version of TLS and ciphers is your service using? WhaTLS reports on all SSL 
 sessions that were captured and exports the data to CSV.
 
+From the data, making a pivot table and chart is basic Excel magic.
+
+![Excel Pie Chart](excel_screenshot.png)
+
 ## What is included in the report?
 
 * capture_file - The name of the capture file where the data was pulled.

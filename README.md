@@ -34,3 +34,7 @@ without first running it through `tcpdump`, pyshark chokes on it for some reason
 151 SSL sessions.
 3. Run `./whatls.py MyCaptureFile_filtered.pcap`.
 4. The CSV report will be saved to `MyCaptureFile_filtered.csv`.
+
+## Credits
+
+* Thanks to Brian [@infosecsamurai](https://twitter.com/infosecsamurai) for optimizations and testing.

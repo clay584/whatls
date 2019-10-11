@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.6
 
 import sys
+import os
 import pyshark
 import csv
 from mappings import TLS_VERSION_MAPPING, CIPHER_SUITE_MAPPING
@@ -50,6 +51,8 @@ def get_negotiated_cipher_suite(pkt):
 
 def main(args):
     cap_file = args[1]
+    filename, _ = os.path.splitext(args[1])
+    cap_file = args[1]
     cap = pyshark.FileCapture(cap_file, display_filter="ssl")
     ssl_streams = get_ssl_streams(cap)
     # print(ssl_streams)
@@ -68,13 +71,13 @@ def main(args):
         ssl_connections.append(session_data)
         print(f"Found TLS connection! TCP stream {client_hello_pkt.tcp.stream} used {session_data['negotiated_tls_version']} and {session_data['negotiated_cipher_suite']}")
 
-    with open(args[1].split('.')[0] + '.csv', 'w') as f:
+    with open(filename + '.csv', 'w') as f:
         keys = ssl_connections[0].keys()
         dict_writer = csv.DictWriter(f, keys)
         dict_writer.writeheader()
         dict_writer.writerows(ssl_connections)
 
-    print(f"Saved data to {cap_file.split('.')[0]}.csv")
+    print(f"Saved data to {filename}.csv")
     # Fix for asyncio bug with pyshark
     cap.close()
     # Fix for asyncio bug that keeps looping over capture

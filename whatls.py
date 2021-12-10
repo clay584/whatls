@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -11,18 +11,40 @@ def get_ssl_streams(cap):
     ssl_handshake_packets = []
     handshake_tuples_list = []
     for pkt in cap:
-        if pkt.highest_layer == "SSL" and pkt.ssl.get_field("handshake") is not None:
-            if "Client Hello" in pkt.ssl.get_field("handshake") or "Server Hello" in pkt.ssl.get_field("handshake"):
-                ssl_handshake_packets.append(pkt)
+        # try it for SSL packets
+        # try:
+        #     if (
+        #         pkt.highest_layer == "SSL"
+        #         and pkt.ssl.get_field("handshake") is not None
+        #     ) and (
+        #         "Client Hello" in pkt.ssl.get_field("handshake")
+        #         or "Server Hello" in pkt.ssl.get_field("handshake")
+        #     ):
+        #         ssl_handshake_packets.append(pkt)
+        # except Exception:
+        #     print("No SSL higher layers found")
+
+        # try it for TLS packets
+        if (
+            pkt.highest_layer == "TLS" and pkt.tls.get_field("handshake") is not None
+        ) and (
+            "Client Hello" in pkt.tls.get_field("handshake")
+            or "Server Hello" in pkt.tls.get_field("handshake")
+        ):
+            ssl_handshake_packets.append(pkt)
+
     match = False
     for i in ssl_handshake_packets:
         client_hello_pkt = None
         server_hello_pkt = None
-        if "Client Hello" in i.ssl.get_field("handshake"):
+        if "Client Hello" in i.tls.get_field("handshake"):
             client_hello_pkt = i
             client_hello_stream = int(i.tcp.stream)
             for j in ssl_handshake_packets:
-                if "Server Hello" in j.ssl.get_field("handshake") and int(j.tcp.stream) == client_hello_stream:
+                if (
+                    "Server Hello" in j.tls.get_field("handshake")
+                    and int(j.tcp.stream) == client_hello_stream
+                ):
                     server_hello_pkt = j
                 if client_hello_pkt is not None and server_hello_pkt is not None:
                     handshake_tuples_list.append((client_hello_pkt, server_hello_pkt))
@@ -35,16 +57,14 @@ def get_ssl_streams(cap):
 
 def get_negotiated_tls_version(pkt):
     try:
-        return TLS_VERSION_MAPPING[str(pkt.ssl.get_field("handshake_version"))]
+        return TLS_VERSION_MAPPING[str(pkt.tls.get_field("handshake_version"))]
     except KeyError:
         return str(pkt.ssl.get_field("handshake_version"))
 
 
 def get_negotiated_cipher_suite(pkt):
     try:
-        return CIPHER_SUITE_MAPPING[
-            str(hex(int(pkt.ssl.get("handshake_ciphersuite"))))
-        ]
+        return CIPHER_SUITE_MAPPING[str(hex(int(pkt.tls.get("handshake_ciphersuite"))))]
     except KeyError:
         return str(hex(int(pkt.ssl.get("handshake_ciphersuite"))))
 
@@ -63,15 +83,17 @@ def main(args):
         session_data = {
             "capture_file": cap_file,
             "tcp_stream_id": str(client_hello_pkt.tcp.stream),
-            "client_hello": str(client_hello_pkt.ssl),
-            "server_hello": str(server_hello_pkt.ssl),
+            "client_hello": str(client_hello_pkt.tls),
+            "server_hello": str(server_hello_pkt.tls),
             "negotiated_tls_version": get_negotiated_tls_version(server_hello_pkt),
             "negotiated_cipher_suite": get_negotiated_cipher_suite(server_hello_pkt),
         }
         ssl_connections.append(session_data)
-        print(f"Found TLS connection! TCP stream {client_hello_pkt.tcp.stream} used {session_data['negotiated_tls_version']} and {session_data['negotiated_cipher_suite']}")
+        print(
+            f"Found TLS connection! TCP stream {client_hello_pkt.tcp.stream} used {session_data['negotiated_tls_version']} and {session_data['negotiated_cipher_suite']}"
+        )
 
-    with open(filename + '.csv', 'w') as f:
+    with open(filename + ".csv", "w") as f:
         keys = ssl_connections[0].keys()
         dict_writer = csv.DictWriter(f, keys)
         dict_writer.writeheader()
